@@ -143,7 +143,7 @@ terraform plan -var-file="terraform.tfvars" -target=azurerm_windows_function_app
 troubleshoot:
 
 check the current role assignments for your service principal
-az role assignment list --assignee 19ea67f7-e415-43ac-a5b6-35eb4ee77801
+az role assignment list --assignee XXXXXXXXXXXXXXXXXXXXXXXXXX
 
 verify that the service principal credentials are correct
 Try logging in with the service principal using Azure CLI
@@ -164,7 +164,7 @@ TF_VAR_tenant_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
 
-az login --service-principal -u 19ea67f7-e415-43ac-a5b6-35eb4ee77801 -p Bvc8Q~AJYEwoeC3yE9vXMFMfsH-df0RMBRVSQc4D --tenant d7a6613d-4ffe-429b-a248-93557529b50f
+
 
 
 TEST
