@@ -1,0 +1,50 @@
+
+# azure-iac-demo  Bicep  README
+
+Bicep scripts are a modern alternative to ARM scripts for use in manual or CI/CD deployment of azure resources.
+They serve the same purpose as Terraform scripts, but are native to the Microsoft devops toolchain. Terraform has excellent support as well though.
+
+The file 'resource-group-arm.bicep' will create 3 additional resources within an existing resource group. (See below for how it was created)
+
+after dploying bicep files, pre-existing Resource Group will contain:
+
+- Storage Account
+- Function
+- Static Web App
+
+This will exactly recrate the infrastructure created by the terraform scripts.
+
+# TODO:  this bicep code is not (yet) parameterized, it needs to be.
+
+
+# Required:
+
+1) resource group exists
+2) local bicep file exists (see how to below)
+3) same region as resouce group is declared in bicep.
+
+
+
+1) If necessary, create a resource group, with the name expected by the bicep for the contained resources. Use 'upwork-test-rg' for example
+
+    > az group create --name upwork-test-rg --location <REGION>>
+
+    see env var: AZURE_REGION
+
+    2) deploy the resources to the resource group as defined in the bicep file.
+
+    >  az deployment group create --resource-group "upwork-test-rg" --template-file "resource-group-arm.bicep" 
+
+
+
+## How resource-group-arm.bicep was created
+
+1) The terraform script was run to deploy azure resources. (set vars as required first)
+2) In the created Azure resource group, select Automation export template. This displays an ARM script for all the resources in the resource group.
+3) copy the ARM script to a local file 'resource-group-arm.json'.
+4) perform az decompilation to create bicep file 'resource-group-arm.bicep': 
+    
+    > az bicep decompile --file resource-group-arm.json
+
+
+

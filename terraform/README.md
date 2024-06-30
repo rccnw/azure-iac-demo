@@ -1,76 +1,95 @@
-# azure-iac-demo
-Demo using IaC to create Azure resources
+# azure-iac-demo  Terraform  README
 
-- Azure Resource Group
-- Azure Storage Account
-- Azure Function
-- Azure Static Web App
+Follow the instructions here to create Azure infrastructure using Terraform.
 
+Terraform local state is used here for single developer usage. Use remote state for teams.
 
+Ensure local state is syncronized. 
+Start with all target Azure resources not existing and no local terraform state files.
+Once terraform has been used to create resources, do not modify resources manually.
 
-(Instructions are for Windows 11)
+If in doubt, delete Azure resource group and contents manually in the portal, 
+and delete the following local files:
 
-Get the repo with the sample scripts
-open a command prompt and navigate to a file location where you would like to download the demo repo.
-(best to fork the repo)
-
-git clone https://github.com/rccnw/azure-iac-demo.git
-
-If you didn't fork the repo, then create another folder and copy the files there.
-
-
-To use Terraform scripts locally, follow these steps:
-
-Make sure you have Terraform installed on your machine. 
-You can download it from the official Terraform website at the following links.
-
-Install Terraform:
-
-Note:  ensure that you install Terraform Core 1.90 and terraform-provider-azurerm 3.110.0
-
-https://github.com/hashicorp/terraform-provider-azurerm/blob/main/CHANGELOG.md
-azurerm_static_web_app  requires terraform-provider-azurerm version >= 3.95.0
-
-
-https://developer.hashicorp.com/terraform/install
-https://developer.hashicorp.com/terraform/install#next-steps
-https://developer.hashicorp.com/terraform/tutorials/azure-get-started
-https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli
-
-
-You will also need Azure CLI 
-
-Install Azure CLI:
-
-https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
-
-Install the Azure CLI and authenticate with your Azure account.
-
-If you have chocolatey, use it to install Terraform (see above links for other options)
-https://chocolatey.org/
-
---Launch cmd prompt in admin mode
-    choco install terraform
-
---confirm:   
-    terraform -help
-    terraform -help plan
-
-
-AZ CLI 
-(there are various ways to perform az login, here is the browser based example - use it if you have problems with az login)
-az login --use-device-code
-
-az account list
-
-If you have multiple subscriptions, note the 'isDefault' property to indicate the active subscription for these commands
+- .terraform.lock.hcl
+- terraform.tfstate
+- tfplan
 
 
 
-Initialize Terraform:
+
+# Requirements:
+
+## Service Principal
+
+Perform this command using your desired Subscription ID
+> az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+
+This command will return JSON containing info needed by Terraform to manage Azure resources.
+
+*** IMPORTANT:  SAVE THESE VALUES, THEY CANNOT BE VIEWED AGAIN
+
+e.g.: 
+{
+  "appId"       : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+  "displayName" : "azure-cli-YYYY-MM-DD-HH-MM-SS",
+  "password"    : "XXXXXXXXXXXXXXXXXXXX",
+  "tenant"      : "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+}
+
+
+Provide these values to Terraform as either
+- responses to interactive prompts when running 'terraform plan'  or 
+- values in terraform.tfvars  or
+- environment variables prefixed with 'TF_VAR_'
+
+    client_id            (SP appId)
+    client_secret        (SP password)
+    subscription_id      (your subscription)
+    tenant_id            (SP tenant)
+
+see :
+    Create an Azure service principal with Azure CLI  
+    https://learn.microsoft.com/en-us/cli/azure/azure-cli-sp-tutorial-1?tabs=bash
+
+You could sign in to Azure with the Service Principal credentials if you want, but not necessary if you configure Terraform with the credentials
+
+## Function authorization key
+
+Generate a GUID and save in the terraform.tfvars file as 'function_auth_key'
+
+## Define Azure region as 'location' in the terraform.tfvars file
+
+e.g. :  'west europe'
+
+## Local variables file
+
+You must create a 'terraform.tfvars' file with values (any name ok, but instructions assume this name)
+> \azure-iac-demo\terraform\terraform.tfvars
+
+see example.tfvars, change names as desired and create your own function auth key
+
+Important:  set 'location' value as desired for Azure region
+
+## Environment Variables (these could be in .tfvars file without the TF_VAR_ prefix)
+
+use the value returned from creation of service principal
+
+TF_VAR_client_id            (appId)
+TF_VAR_client_secret        (password)
+TF_VAR_subscription_id
+TF_VAR_tenant_id
+
+
+
+
+
+
+
+## Initialize Terraform:
 Open a terminal, navigate to your new Terraform project directory, and run:
 
-    terraform init
+> terraform init
 
 This will initialize Terraform and download the necessary provider plugins. 
 (run it again to resync state if you destroy or otherwise modify the Azure resources)
@@ -79,47 +98,34 @@ Run the following command to see what changes Terraform will make:
 
 (Specify the resource group name as a command line argument)  e.g.:  'upwork-demo-rg'  
 
-    terraform plan -var="resource_group_name=upwork-demo-rg" -out=tfplan
+> terraform plan -var="resource_group_name=upwork-demo-rg" -out=tfplan
 
 If the plan looks good, apply the changes:
     
-    terraform apply "tfplan"
+> terraform apply "tfplan"
 
 Terraform will ask for confirmation before making any changes.
 
 After applying, you can verify the azure resources are created in the Azure portal or using Azure CLI.
 
     az group show --name <resource-group-name>
-    az group show --name upwork-demo-rg
+
+ >  az group show --name upwork-demo-rg
 
 
 Remember to run terraform destroy when you're done to clean up the resources and avoid unnecessary costs.
 
-    terraform destroy -var-file="terraform.tfvars"
+>    terraform destroy -var-file="terraform.tfvars"
 
 Once again, if you need to iterate terraform code changes, this is the loop:
 
-    terraform plan -var-file="terraform.tfvars" -out=tfplan
+>    terraform plan -var-file="terraform.tfvars" -out=tfplan
 
-    terraform apply "tfplan"
-
-
-
-Notes re azurerm_service_plan plan selection 'Y1'
-
-The "Y1" SKU specifically refers to the Consumption plan for Azure Functions:
-Y: Indicates that this is a Consumption (serverless) plan
-1: Denotes the performance tier within the Consumption plan category
-
-Key characteristics of the Y1 (Consumption) plan:
-
-Serverless: It automatically scales based on workload.
-Pay-per-use: You're billed based on the number of executions, execution time, and memory used.
-No dedicated compute resources: Resources are allocated dynamically as needed.
-Ideal for sporadic workloads or when you want to minimize costs for low-usage scenarios.
+>    terraform apply "tfplan"
 
 
 
+## Note re Function deployment to Function App
 To create an HTTP trigger function, we'd typically use the azurerm_function_app_function resource. 
 However, since we're using a custom runtime configuration (.NET 8 isolated worker model), 
 we'll need to deploy the function code separately. 

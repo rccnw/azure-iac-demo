@@ -23,7 +23,7 @@ provider "azurerm" {
 
 resource "azurerm_resource_group" "rg" {
   name     = "${var.project}-${var.environment}-${var.rg-description}-rg"
-  location = local.environment_location
+  location = var.location
 }
 
 
@@ -35,9 +35,14 @@ resource "azurerm_storage_account" "sa" {
   location                 = azurerm_resource_group.rg.location
   account_tier             = "Standard"
   account_replication_type = "LRS"
+
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
+  tags = {
+    environment = var.environment
+  }  
 }
-
-
 
 # Add Service Plan
 resource "azurerm_service_plan" "sp" {
@@ -46,26 +51,41 @@ resource "azurerm_service_plan" "sp" {
   location            = azurerm_resource_group.rg.location
   os_type             = "Windows"
   sku_name            = "Y1"
+
+  depends_on = [
+    azurerm_resource_group.rg
+  ]
+  tags = {
+    environment = var.environment
+  }
 }
 
 data "azurerm_storage_account" "sa" {
   name                = azurerm_storage_account.sa.name
   resource_group_name = azurerm_resource_group.rg.name
+
+    depends_on = [
+    azurerm_resource_group.rg
+  ]
+
+# note: The tags attribute for a data source like azurerm_storage_account is computed based on the existing infrastructure and cannot be set in the configuration.
+
 }
 
 
 resource "azurerm_static_web_app" "swa" {
-  location = local.environment_location
+  location            = azurerm_resource_group.rg.location
   name                = "${var.project}-${var.environment}-${var.swa-description}-swa"
-  resource_group_name      = azurerm_resource_group.rg.name
+  resource_group_name = azurerm_resource_group.rg.name
   depends_on = [
-    azurerm_resource_group.rg
+    azurerm_resource_group.rg,
+    azurerm_storage_account.sa,
   ]
+
+  tags = {
+    environment = var.environment
+  }  
 }
-
-
-
-
 
 
 resource "azurerm_windows_function_app" "fa" {
@@ -78,11 +98,20 @@ resource "azurerm_windows_function_app" "fa" {
   service_plan_id            = azurerm_service_plan.sp.id
 
   site_config {}
+
+  depends_on = [
+      random_string.unique,
+      azurerm_resource_group.rg,
+      azurerm_service_plan.sp,
+      azurerm_storage_account.sa,
+      azurerm_static_web_app.swa
+
+  ]
+
+  tags = {
+    environment = var.environment
+  }  
 }
-
-
-
-# Add Function App 
 
 
 resource "random_string" "unique" {
@@ -90,15 +119,7 @@ resource "random_string" "unique" {
   special = false
   upper   = false
   keepers = {
-    # Generate a new id each time we switch to a new function app name or apply
-    redo = "${timestamp()}"
+    # Only regenerate when the service plan ID changes
+    service_plan_id = azurerm_service_plan.sp.id
   }
-}
-
-
-
-# Read environment variables
-locals {
-  default_location     = "westus2"
-  environment_location = var.location != "" ? var.location : local.default_location
-}
+} 
