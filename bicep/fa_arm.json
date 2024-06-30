@@ -1,0 +1,160 @@
+
+param sites_upwork_prod_function_app_bohfhwjt_fa_name string = 'upwork-prod-function-app-bohfhwjt-fa'
+param serverfarms_upwork_prod_service_plan_sp_externalid string = '/subscriptions/7c2f0cc3-5769-4721-91a1-efabdb7a5b63/resourceGroups/upwork-prod-resource-group-rg/providers/Microsoft.Web/serverfarms/upwork-prod-service-plan-sp'
+
+resource sites_upwork_prod_function_app_bohfhwjt_fa_name_resource 'Microsoft.Web/sites@2023-12-01' = {
+  name: sites_upwork_prod_function_app_bohfhwjt_fa_name
+  location: 'West US 2'
+  kind: 'functionapp'
+  properties: {
+    enabled: true
+    hostNameSslStates: [
+      {
+        name: '${sites_upwork_prod_function_app_bohfhwjt_fa_name}.azurewebsites.net'
+        sslState: 'Disabled'
+        hostType: 'Standard'
+      }
+      {
+        name: '${sites_upwork_prod_function_app_bohfhwjt_fa_name}.scm.azurewebsites.net'
+        sslState: 'Disabled'
+        hostType: 'Repository'
+      }
+    ]
+    serverFarmId: serverfarms_upwork_prod_service_plan_sp_externalid
+    reserved: false
+    isXenon: false
+    hyperV: false
+    dnsConfiguration: {}
+    vnetRouteAllEnabled: false
+    vnetImagePullEnabled: false
+    vnetContentShareEnabled: false
+    siteConfig: {
+      numberOfWorkers: 1
+      acrUseManagedIdentityCreds: false
+      alwaysOn: false
+      http20Enabled: false
+      functionAppScaleLimit: 200
+      minimumElasticInstanceCount: 0
+    }
+    scmSiteAlsoStopped: false
+    clientAffinityEnabled: false
+    clientCertEnabled: false
+    clientCertMode: 'Optional'
+    hostNamesDisabled: false
+    vnetBackupRestoreEnabled: false
+    customDomainVerificationId: 'B90967E10B2CD51A753CAA8AA964F66EC9FBED4401D049A24C05825D179FBD9E'
+    containerSize: 1536
+    dailyMemoryTimeQuota: 0
+    httpsOnly: false
+    redundancyMode: 'None'
+    publicNetworkAccess: 'Enabled'
+    storageAccountRequired: false
+    keyVaultReferenceIdentity: 'SystemAssigned'
+  }
+}
+
+resource sites_upwork_prod_function_app_bohfhwjt_fa_name_ftp 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
+  parent: sites_upwork_prod_function_app_bohfhwjt_fa_name_resource
+  name: 'ftp'
+  location: 'West US 2'
+  properties: {
+    allow: true
+  }
+}
+
+resource sites_upwork_prod_function_app_bohfhwjt_fa_name_scm 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2023-12-01' = {
+  parent: sites_upwork_prod_function_app_bohfhwjt_fa_name_resource
+  name: 'scm'
+  location: 'West US 2'
+  properties: {
+    allow: true
+  }
+}
+
+resource sites_upwork_prod_function_app_bohfhwjt_fa_name_web 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: sites_upwork_prod_function_app_bohfhwjt_fa_name_resource
+  name: 'web'
+  location: 'West US 2'
+  properties: {
+    numberOfWorkers: 1
+    defaultDocuments: [
+      'Default.htm'
+      'Default.html'
+      'Default.asp'
+      'index.htm'
+      'index.html'
+      'iisstart.htm'
+      'default.aspx'
+      'index.php'
+    ]
+    netFrameworkVersion: 'v4.0'
+    requestTracingEnabled: false
+    remoteDebuggingEnabled: false
+    httpLoggingEnabled: false
+    acrUseManagedIdentityCreds: false
+    logsDirectorySizeLimit: 35
+    detailedErrorLoggingEnabled: false
+    publishingUsername: '$upwork-prod-function-app-bohfhwjt-fa'
+    scmType: 'None'
+    use32BitWorkerProcess: true
+    webSocketsEnabled: false
+    alwaysOn: false
+    managedPipelineMode: 'Integrated'
+    virtualApplications: [
+      {
+        virtualPath: '/'
+        physicalPath: 'site\\wwwroot'
+        preloadEnabled: false
+      }
+    ]
+    loadBalancing: 'LeastRequests'
+    experiments: {
+      rampUpRules: []
+    }
+    autoHealEnabled: false
+    vnetRouteAllEnabled: false
+    vnetPrivatePortsCount: 0
+    publicNetworkAccess: 'Enabled'
+    localMySqlEnabled: false
+    ipSecurityRestrictions: [
+      {
+        ipAddress: 'Any'
+        action: 'Allow'
+        priority: 2147483647
+        name: 'Allow all'
+        description: 'Allow all access'
+      }
+    ]
+    ipSecurityRestrictionsDefaultAction: 'Allow'
+    scmIpSecurityRestrictions: [
+      {
+        ipAddress: 'Any'
+        action: 'Allow'
+        priority: 2147483647
+        name: 'Allow all'
+        description: 'Allow all access'
+      }
+    ]
+    scmIpSecurityRestrictionsDefaultAction: 'Allow'
+    scmIpSecurityRestrictionsUseMain: false
+    http20Enabled: false
+    minTlsVersion: '1.2'
+    scmMinTlsVersion: '1.2'
+    ftpsState: 'Disabled'
+    preWarmedInstanceCount: 0
+    functionAppScaleLimit: 200
+    functionsRuntimeScaleMonitoringEnabled: false
+    minimumElasticInstanceCount: 0
+    azureStorageAccounts: {}
+  }
+}
+
+resource sites_upwork_prod_function_app_bohfhwjt_fa_name_sites_upwork_prod_function_app_bohfhwjt_fa_name_azurewebsites_net 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
+  parent: sites_upwork_prod_function_app_bohfhwjt_fa_name_resource
+  name: '${sites_upwork_prod_function_app_bohfhwjt_fa_name}.azurewebsites.net'
+  location: 'West US 2'
+  properties: {
+    siteName: 'upwork-prod-function-app-bohfhwjt-fa'
+    hostNameType: 'Verified'
+  }
+}
