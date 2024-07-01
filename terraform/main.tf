@@ -26,23 +26,58 @@ resource "azurerm_resource_group" "rg" {
   location = var.location
 }
 
+module "storage_account" {
+  source      = "./modules/storage_account"
+  resource_group_name = azurerm_resource_group.rg.name
+  resource_group_location = azurerm_resource_group.rg.location
+  project             = var.project
+  environment         = var.environment
+  sa-description      = var.sa-description
 
-# Add Storage Account
-resource "azurerm_storage_account" "sa" {
-
-  name     = "${var.project}${var.environment}${var.sa-description}sa"
-  resource_group_name      = azurerm_resource_group.rg.name
-  location                 = azurerm_resource_group.rg.location
-  account_tier             = "Standard"
-  account_replication_type = "LRS"
-
-  depends_on = [
-    azurerm_resource_group.rg
-  ]
-  tags = {
-    environment = var.environment
-  }  
 }
+
+module "static_web_app" {
+  source = "./modules/static_web_app"
+  resource_group_name = azurerm_resource_group.rg.name
+  project     = var.project
+  environment = var.environment
+  swa-description  = var.swa-description
+  storage_account_name = data.azurerm_storage_account.sa.name
+  resource_group_location = azurerm_resource_group.rg.location
+  storage_account_access_key = data.azurerm_storage_account.sa.primary_access_key
+
+    # only declared to create implicit dependency
+  storage_account_id = data.azurerm_storage_account.sa.id
+  resource_group_id = azurerm_resource_group.rg.id
+
+   depends_on = [module.storage_account]
+}
+
+module "windows_function_app" {
+  source              = "./modules/windows_function_app"
+  resource_group_name = azurerm_resource_group.rg.name
+  project             = var.project
+  environment         = var.environment
+  fa-description      = var.fa-description
+
+  resource_group_location     = azurerm_resource_group.rg.location
+  storage_account_name        = data.azurerm_storage_account.sa.name
+  storage_account_access_key  = data.azurerm_storage_account.sa.primary_access_key
+
+  # these are used for implicit dependency management
+  service_plan_id     = azurerm_service_plan.sp.id
+  resource_group_id   = azurerm_resource_group.rg.id  # creates a dependency on the resource group
+
+  random_string_id = module.windows_function_app.random_string_id
+
+  # only declared to create implicit dependency
+  storage_account_id = data.azurerm_storage_account.sa.id
+  static_web_app_id = module.static_web_app.id
+
+   depends_on = [module.storage_account]
+}
+
+
 
 # Add Service Plan
 resource "azurerm_service_plan" "sp" {
@@ -61,75 +96,12 @@ resource "azurerm_service_plan" "sp" {
 }
 
 data "azurerm_storage_account" "sa" {
-  name                = azurerm_storage_account.sa.name
+  name  = module.storage_account.storage_account_name    #"${var.project}${var.environment}${var.sa-description}sa"
   resource_group_name = azurerm_resource_group.rg.name
 
-    depends_on = [
-    azurerm_resource_group.rg
-  ]
+   depends_on = [module.storage_account]
+}
 
 # note: The tags attribute for a data source like azurerm_storage_account is computed based on the existing infrastructure and cannot be set in the configuration.
 
-}
 
-
-resource "azurerm_static_web_app" "swa" {
-  location            = azurerm_resource_group.rg.location
-  name                = "${var.project}-${var.environment}-${var.swa-description}-swa"
-  resource_group_name = azurerm_resource_group.rg.name
-
-  sku_tier                = "Free"
-  sku_size                = "Standard"
-
-  app_settings = {
-    STORAGE_ACCOUNT_NAME = azurerm_storage_account.sa.name
-    STORAGE_ACCOUNT_KEY  = azurerm_storage_account.sa.primary_access_key
-  }
-
-
-  depends_on = [
-    azurerm_resource_group.rg,
-    azurerm_storage_account.sa,
-  ]
-
-  tags = {
-    environment = var.environment
-  }  
-}
-
-
-resource "azurerm_windows_function_app" "fa" {
- name                       = "${var.project}-${var.environment}-${var.fa-description}-${random_string.unique.result}-fa"
- resource_group_name        = azurerm_resource_group.rg.name
- location                   = azurerm_resource_group.rg.location
-
-  storage_account_name       = azurerm_storage_account.sa.name
-  storage_account_access_key = azurerm_storage_account.sa.primary_access_key
-  service_plan_id            = azurerm_service_plan.sp.id
-
-  site_config {}
-
-  depends_on = [
-      random_string.unique,
-      azurerm_resource_group.rg,
-      azurerm_service_plan.sp,
-      azurerm_storage_account.sa,
-      azurerm_static_web_app.swa
-
-  ]
-
-  tags = {
-    environment = var.environment
-  }  
-}
-
-
-resource "random_string" "unique" {
-  length  = 8
-  special = false
-  upper   = false
-  keepers = {
-    # Only regenerate when the service plan ID changes
-    service_plan_id = azurerm_service_plan.sp.id
-  }
-} 

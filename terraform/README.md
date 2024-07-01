@@ -13,6 +13,7 @@ and delete the following local files:
 
 - .terraform.lock.hcl
 - terraform.tfstate
+- terraform.tfstate.backup
 - tfplan
 
 
@@ -146,7 +147,22 @@ terraform plan -var-file="terraform.tfvars" -target=azurerm_windows_function_app
 
 
 
-troubleshoot:
+# Dependency Management
+
+
+see: https://dev.to/pwd9000/terraform-understanding-implicit-and-explicit-dependencies-n9l
+
+using the 'depends_on' attribute toi declare 'explicit dependencies' seems to work well in a scenario without modules.
+However, a different technique is required when modules are introduced.
+Using resource id's as an 'implicit dependency' is recommended.
+Even that may not be sufficient and so in addition using this form is an option:
+
+> depends_on = [module.storage_account]
+
+
+
+
+# Troubleshoot:
 
 check the current role assignments for your service principal
 az role assignment list --assignee XXXXXXXXXXXXXXXXXXXXXXXXXX
