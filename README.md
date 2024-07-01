@@ -7,21 +7,6 @@
 - Static Web App
 
 
-*******************************************************
-TODO
-
-- Resource tags from variables
-- The resources must use modules
-- Explicit dependency for Azure Static Web App from Azure Function
-
-Enabling static websites on the blob service allows you to host static content
-https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website
-https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blob-static-website-how-to?tabs=azure-portal
-
-
-
-
-
 # Requirements:
 
 - Git
