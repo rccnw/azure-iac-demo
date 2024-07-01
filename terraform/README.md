@@ -1,5 +1,25 @@
 # azure-iac-demo  Terraform  README
 
+
+# Quickstart
+
+1) Create a service principal, save the json credentials result 
+2) Copy the 'example.tfvars' file to 'terraform.tfvars' and configure with SP credentials and your settings
+3) Login Azure CLI to your account and desired subscription
+4) Use the command helper files to perform the Terraform process sequence:  init/plan/apply/destroy
+
+
+# Helper files
+
+These all presume the use of "tfplan" for the plan file
+
+init.cmd        terraform init
+plan.cmd        terraform plan -var-file="terraform.tfvars" -out=tfplan
+apply.cmd       terraform apply "tfplan"
+detroy.cmd      terraform destroy -var-file="terraform.tfvars"
+
+
+
 Follow the instructions here to create Azure infrastructure using Terraform.
 
 Terraform local state is used here for single developer usage. Use remote state for teams.

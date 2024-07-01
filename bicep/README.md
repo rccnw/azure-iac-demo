@@ -2,38 +2,25 @@
 # azure-iac-demo  Bicep  README
 
 
-Files in this folder:
+# Quickstart
 
-README.md    - this file
+1) Login Azure CLI to your account and desired subscription
 
-(the following files are examples only, if you modify the terraform or the resources, you must discard these and recreate them)
+2) Ensure you have an empty resource group named 'upwork-prod-resource-group-rg' in region 'West Europe' (to correspond with sample bicep file)
 
-(Before the below files were created, the terraform scripts were run with region=westurope)
+3) use az cli to deploy the sample 'params.bicep' bicep file:
 
-wu-rg-arm-template.json         - this arm script file was created by performing Automation/Export Template in the resource group created by terraform.
-wu-rg-arm-template.bicep        - this file was created by using azure cli to transform the arm script file to a bicep file.
-params.bicep                    - this file is a parameterized version of 'wu-rg-arm-template.bicep'
+    > az deployment group create --resource-group "upwork-prod-resource-group-rg" --template-file "params.bicep" 
 
 
+# Next Steps
 
+1) Parameterize the bicep file further, this is only a demo level of params provided by the Azure CLI 'az bicep decompile' operation.
 
-
-
-
-Bicep scripts are a modern alternative to ARM scripts for use in manual or CI/CD deployment of azure resources.
-They serve the same purpose as Terraform scripts, but are native to the Microsoft devops toolchain. Terraform has excellent support as well though.
-
-The file 'resource-group-arm.bicep' will create 3 additional resources within an existing resource group. (See below for how it was created)
-
-after dploying bicep files, pre-existing Resource Group will contain:
-
-- Storage Account
-- Function
-- Static Web App
-
-This will exactly recrate the infrastructure created by the terraform scripts.
-
-# TODO:  this bicep code is not (yet) parameterized, it needs to be.
+2) Decide which path going forward to modify resources:
+    a) Terraform first : Modify terraform scripts, apply them to Azure, export ARM templates, convert to bicep with az cli, and redeploy with az cli
+    b) Bicep first:  modify bicep file and deploy with az cli
+    c) Azure first:  modify azure resource in portal, and export ARM templates, convert to bicep with az cli, and redeploy with az cli
 
 
 # Required:
@@ -41,6 +28,29 @@ This will exactly recrate the infrastructure created by the terraform scripts.
 1) target empty resource group exists
 2) local bicep file exists (see how to below)
 3) same region as resouce group is declared in bicep.
+
+
+## Files in this folder:
+
+- README.md    - this file
+
+(the following files are examples only, if you modify the terraform or the resources, you must discard these and recreate them)
+(Before the below files were created, the terraform scripts were run with region=westurope)
+
+- wu-rg-arm-template.json         - this arm script file was created by performing Automation/Export Template in the resource group created by terraform.
+- wu-rg-arm-template.bicep        - this file was created by using azure cli to transform the arm script file to a bicep file.
+- params.bicep                    - this file is a parameterized version of 'wu-rg-arm-template.bicep'
+
+
+after deploying the samnple bicep file, the pre-existing Resource Group will contain:
+
+- Storage Account
+- Function
+- Static Web App
+
+This will exactly recrate the infrastructure created by the terraform scripts.
+
+
 
 
 
@@ -58,19 +68,31 @@ This will exactly recrate the infrastructure created by the terraform scripts.
 
 
 
-## How resource-group-arm.bicep was created
+## How params.bicep was created
 
 1) The terraform script was run to deploy azure resources. (set vars as required first)
-2) In the created Azure resource group, select Automation export template. This displays an ARM script for all the resources in the resource group.
-3) copy the ARM script to a local file 'resource-group-arm.json'.
-4) perform az decompilation to create bicep file 'resource-group-arm.bicep': 
-    
-    > az bicep decompile --file resource-group-arm.json
 
-az bicep decompile --file wu-rg-arm-template.json
+2) In the created Azure resource group, select Automation export template. This displays an ARM script for all the resources in the resource group.
+
+3) copy the ARM script to a local file  e,g,:  'wu-rg-arm-template.json'.
+    > az bicep decompile --file wu-rg-arm-template.json
+
+4) perform az decompilation to create bicep file 
+    > az bicep decompile --file wu-rg-arm-template.json
+
+    this will produce file:  wu-rg-arm-template.bicep
+
+5) rename 'wu-rg-arm-template.bicep'  to 'params.bicep' (if you want) to use as a starting point for further customizations
+
 
 
 # Issues
+
+
+## disclaimer
+ - below are warnings that were reported during the process.  No changes were made based on these warning, but superficially everything seems to have worked
+
+
 
 In the Azure Portal resource group overview, selecting Automation/Export Template produces a json template, but also reports an error:
 
@@ -104,3 +126,5 @@ D:\Dev2024\git-rccnw\azure-iac-demo\bicep\wu-rg-arm-template.bicep(339,3) : Warn
 D:\Dev2024\git-rccnw\azure-iac-demo\bicep\wu-rg-arm-template.bicep(357,5) : Warning no-unnecessary-dependson: Remove unnecessary dependsOn entry 'storageAccounts_upworkprodstgacctsa_name_resource'. [https://aka.ms/bicep/linter/no-unnecessary-dependson]
 D:\Dev2024\git-rccnw\azure-iac-demo\bicep\wu-rg-arm-template.bicep(373,5) : Warning no-unnecessary-dependson: Remove unnecessary dependsOn entry 'storageAccounts_upworkprodstgacctsa_name_resource'. [https://aka.ms/bicep/linter/no-unnecessary-dependson]
 D:\Dev2024\git-rccnw\azure-iac-demo\bicep\wu-rg-arm-template.bicep(386,5) : Warning no-unnecessary-dependson: Remove unnecessary dependsOn entry 'storageAccounts_upworkprodstgacctsa_name_resource'. [https://aka.ms/bicep/linter/no-unnecessary-dependson]
+
+# END
