@@ -77,6 +77,16 @@ resource "azurerm_static_web_app" "swa" {
   location            = azurerm_resource_group.rg.location
   name                = "${var.project}-${var.environment}-${var.swa-description}-swa"
   resource_group_name = azurerm_resource_group.rg.name
+
+  sku_tier                = "Free"
+  sku_size                = "Standard"
+
+  app_settings = {
+    STORAGE_ACCOUNT_NAME = azurerm_storage_account.sa.name
+    STORAGE_ACCOUNT_KEY  = azurerm_storage_account.sa.primary_access_key
+  }
+
+
   depends_on = [
     azurerm_resource_group.rg,
     azurerm_storage_account.sa,
