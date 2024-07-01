@@ -12,5 +12,7 @@ resource "azurerm_static_web_app" "swa" {
 
   tags = {
     environment = var.environment
+    project     = var.project
   }  
 }
+

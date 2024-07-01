@@ -10,5 +10,6 @@ resource "azurerm_storage_account" "sa" {
 
   tags = {
     environment = var.environment
+    project     = var.project
   }  
 }

@@ -30,38 +30,11 @@ variable "location" {
   default     = "West US 2"
 }
 
-
-# component names
-variable "resource_group_name" {
-  type        = string
-  description = "Name of the resource group"
-  default     = ""
-}
-
-variable "storage_account_name" {
-  type        = string
-  description = "Name of the storage account"
-}
-
-variable "service_plan_name" {
-  type        = string
-  description = "Name of the App Service plan"
-}
-
-variable "function_app_name" {
-  type        = string
-  description = "Name of the Function App"
-}
-
-
-
 variable "function_auth_key" {
   type        = string
   description = "Authentication key for the HTTP trigger function"
   sensitive   = true
 }
-
-
 
 
 variable "rg-description" {

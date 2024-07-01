@@ -15,7 +15,8 @@ resource "azurerm_windows_function_app" "fa" {
 
   tags = {
     environment = var.environment
-  }  
+    project     = var.project
+  } 
 }
 
 

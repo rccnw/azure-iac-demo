@@ -92,6 +92,7 @@ resource "azurerm_service_plan" "sp" {
   ]
   tags = {
     environment = var.environment
+    project     = var.project
   }
 }
 
