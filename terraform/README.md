@@ -172,14 +172,33 @@ terraform plan -var-file="terraform.tfvars" -target=azurerm_windows_function_app
 
 see: https://dev.to/pwd9000/terraform-understanding-implicit-and-explicit-dependencies-n9l
 
-using the 'depends_on' attribute toi declare 'explicit dependencies' seems to work well in a scenario without modules.
+using the 'depends_on' attribute to declare 'explicit dependencies' seems to work well in a scenario without modules.
 However, a different technique is required when modules are introduced.
 Using resource id's as an 'implicit dependency' is recommended.
 Even that may not be sufficient and so in addition using this form is an option:
 
 > depends_on = [module.storage_account]
 
+Using a resource id as a dependency is a pattern recommened in official docs, and is used in this project
 
+    e.g. (from \modules\windows_function_app\main.tf)
+
+>   service_plan_id            = var.service_plan_id
+
+This technique requires :
+
+1) a module variable declaration 
+    e.g. (from \modules\windows_function_app\variables.tf)
+
+    > variable "service_plan_id" {}
+
+2) a declaration in the root main.tf for the module
+
+    e.g. (from \terraform\main.tf)
+
+    > module "windows_function_app" {
+    > ...
+    >  service_plan_id     = azurerm_service_plan.sp.id
 
 
 # Troubleshoot:
@@ -204,47 +223,4 @@ TF_VAR_subscription_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 TF_VAR_tenant_id=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 
-
-
-
-
-
-TEST
-
-az storage account create --name rccnwtestspaccount7557 --resource-group upwork-demo-rg --location westus2 --sku Standard_LRS
-
-terraform init -reconfigure
-
-
-HashiCorp Github samples
-
-https://github.com/hashicorp/terraform-provider-azurerm/blob/main/examples/app-service-environment-v3/main.tf
-
-
-
-
-
-
-Resource Group
-name = "${var.project}-${var.environment}-${var.description}-rg"
-
-Function App
-name = "${var.project}-${var.environment}-${var.description}"
-
-Storage Account
-"${var.project}${var.environment}${var.description}st"
-
-Static Web App
-name = "${var.project}-${var.environment}-${var.description}-wa"
-
-
-
-    terraform plan -var-file="terraform.tfvars" -out=tfplan
-
-    terraform apply "tfplan"
-
-terraform destroy -var-file="terraform.tfvars"
-
-
-    https://developer.hashicorp.com/terraform/install
-
+END
