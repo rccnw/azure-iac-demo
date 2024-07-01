@@ -44,15 +44,19 @@ This will exactly recrate the infrastructure created by the terraform scripts.
 
 
 
-1) If necessary, create an empty resource group, with the name expected by the bicep for the contained resources. Use 'upwork-test-rg' for example
+1) If necessary, create an empty resource group, with the name expected by the bicep for the contained resources. 
+    Ideally use the terraform naming scheme 'upwork-<ENV>>-<RESOURCE GROUP NAME>-rg' .  E.G. :  'upwork-prod-resource-group-rg'
 
-    > az group create --name upwork-test-rg --location <REGION>>
+    > az group create --name <RESOURCE GROUP NAME> --location <REGION>>
 
     2) deploy the resources to the resource group as defined in the bicep file.
 
-    >  az deployment group create --resource-group "upwork-test-rg" --template-file "resource-group-arm.bicep" 
+    >  az deployment group create --resource-group "upwork-prod-resource-group-rg" --template-file "params.bicep" 
 
     
+ 
+
+
 
 ## How resource-group-arm.bicep was created
 
