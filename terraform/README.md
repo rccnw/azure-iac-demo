@@ -41,6 +41,14 @@ and delete the following local files:
 
 # Requirements:
 
+## Local Variables File
+
+You must create a local file named 'terraform.tfvars'
+
+Use the example file example.tfvars as a template and configure with your own values.
+
+
+
 ## Service Principal
 
 Perform this command using your desired Subscription ID
@@ -49,6 +57,8 @@ Perform this command using your desired Subscription ID
 This command will return JSON containing info needed by Terraform to manage Azure resources.
 
 *** IMPORTANT:  SAVE THESE VALUES, THEY CANNOT BE VIEWED AGAIN
+
+#
 
 e.g.: 
 {
@@ -63,6 +73,14 @@ Provide these values to Terraform as either
 - responses to interactive prompts when running 'terraform plan'  or 
 - values in terraform.tfvars  or
 - environment variables prefixed with 'TF_VAR_'
+
+# configure the terraform.tfvars with these values
+
+This project uses the .tfvars model.
+
+In addition to other application values, configure the terraform.tfvars file with the SP credentials:
+
+Here is the mapping between the terraform terminology and the Azure SP terminology: 
 
     client_id            (SP appId)
     client_secret        (SP password)
